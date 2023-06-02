@@ -1,28 +1,26 @@
 async function dbSearch(strSearch) {
 	const sqlPromise = await initSqlJs({
-	  locateFile: file => `sql-wasm.wasm`
+	  locateFile: file => 'sql-wasm.wasm'
 	});
 
-	const dataPromise = fetch("anki.db").then(res => res.arrayBuffer());
+	const dataPromise = fetch('../assets/db/vocab.db').then(res => res.arrayBuffer());
 	const [SQL, buf] = await Promise.all([sqlPromise, dataPromise])
 	const db = new SQL.Database(new Uint8Array(buf));
 
-	var strSql = "";
-	strSql += "SELECT key, mean,`order` FROM Quezako WHERE key LIKE '%"+strSearch+"%' ORDER BY `order`";
-	const stmt = db.prepare(strSql);
+	const stmt = db.prepare(`SELECT key, mean, \`order\` FROM Quezako WHERE key LIKE '%${strSearch}%' ORDER BY \`order\``);
 	const result = stmt.getAsObject({});
 	
 	var tbody = document.getElementById('tbody');
 	var strTable = '';
-	rowResult = Object.values(result);
-	strRuby = '<ruby>'+rowResult[0].replace(/\[/g, "<rt>").replace(/\]/g, "</rt>")+'</ruby>';
-	strTable += `<tr><td onclick='javascript:openDiv("`+rowResult[0]+`")'><a>`+strRuby+`</a><br>`+rowResult[1]+`</td></tr>`;
+	var rowResult = Object.values(result);
+	strRuby = `<ruby>${rowResult[0].replace(/\[/g, '<rt>').replace(/\]/g, '</rt>')}</ruby>`;
+	strTable += `<tr><td onclick="javascript:openDiv('${rowResult[0]}')"><a>${strRuby}</a><br>${rowResult[1]}</td></tr>`;
 
 	while(stmt.step()) {
 		const result = stmt.getAsObject();
 		rowResult = Object.values(result);
-		strRuby = '<ruby>'+rowResult[0].replace(/\[/g, "<rt>").replace(/\]/g, "</rt>")+'</ruby>';
-		strTable += `<tr><td onclick='javascript:openDiv("`+rowResult[0]+`")'><a>`+strRuby+`</a><br>`+rowResult[1]+`</td></tr>`;
+		strRuby = `<ruby>${rowResult[0].replace(/\[/g, '<rt>').replace(/\]/g, '</rt>')}</ruby>`;
+		strTable += `<tr><td onclick="javascript:openDiv('${rowResult[0]}')"><a>${strRuby}</a><br>${rowResult[1]}</td></tr>`;
 	}
 	
 	document.getElementById('tbody').innerHTML = strTable;
@@ -30,42 +28,44 @@ async function dbSearch(strSearch) {
 
 async function openDiv(intRow) {
 	const sqlPromise = await initSqlJs({
-	  locateFile: file => `sql-wasm.wasm`
+	  locateFile: file => 'sql-wasm.wasm'
 	});
 
-	const dataPromise = fetch("anki.db").then(res => res.arrayBuffer());
+	const dataPromise = fetch('../assets/db/vocab.db').then(res => res.arrayBuffer());
 	const [SQL, buf] = await Promise.all([sqlPromise, dataPromise])
 	const db = new SQL.Database(new Uint8Array(buf));
 
-	const stmt = db.prepare("SELECT * FROM Quezako WHERE `key` = $intRow");
-	const result = stmt.getAsObject({$intRow:intRow});
+	const stmt = db.prepare(`SELECT * FROM Quezako WHERE key = "${intRow}"`);
+	const result = stmt.getAsObject({});
 	
 	var tbody = document.getElementById('tbody');
 	var strTable = '';
+
 	for (var [key, val] of Object.entries(result)) {
 		if (val != null) {
 			if (key == 'key' || key == 'voc_furi' || key == 'voc_sentence_ja') {
-				arrVal = val.split(" ");
+				arrVal = val.split(' ');
 				val = '';
 				arrVal.forEach(subVal => 
-					val += '<ruby>'+subVal.toString().replace(/\[/g, "<rt>").replace(/\]/g, "</rt>")+'</ruby>'
+					val += `<ruby>${subVal.toString().replace(/\[/g, '<rt>').replace(/\]/g, '</rt>')}</ruby>`
 				);
 			}
+
 			strTable += `<tr><td><b>${key} :<br></b>${val}</td></tr>`;
 		}
 	}
 	
-	document.querySelector(".dynamicText").innerHTML = '<table>'+strTable+'</table>';
-	document.getElementById("myModal").style.display = "block";
+	document.querySelector('.dynamicText').innerHTML = `<table>${strTable}</table>`;
+	document.getElementById('myModal').style.display = 'block';
 }
 
-document.addEventListener("DOMContentLoaded", function(event) { 
+document.addEventListener('DOMContentLoaded', function(event) { 
 	var input = document.getElementById('search');
 	wanakana.bind(input);
 
 	var searchtimer;
-	window.addEventListener("DOMContentLoaded", () => {
-	  document.querySelector("#search").addEventListener("input", (e) => {
+	window.addEventListener('DOMContentLoaded', () => {
+	  document.querySelector('#search').addEventListener('input', (e) => {
 		clearTimeout(searchtimer);
 		searchtimer = setTimeout(() => {
 			console.log(e.target.value);
@@ -74,18 +74,18 @@ document.addEventListener("DOMContentLoaded", function(event) {
 	  });
 	});
 
-	var modal = document.getElementById("myModal");
-	var span = document.getElementsByClassName("close")[0];
+	var modal = document.getElementById('myModal');
+	var span = document.getElementsByClassName('close')[0];
 
-	document.querySelector(".close").onclick = function() {
-	  modal.style.display = "none";
+	document.querySelector('.close').onclick = function() {
+	  modal.style.display = 'none';
 	}
 
 	window.onclick = function(event) {
 	  if (event.target == modal) {
-		modal.style.display = "none";
+		modal.style.display = 'none';
 	  }
 	}
 	
-	document.getElementById("search").focus();
+	document.getElementById('search').focus();
 });
