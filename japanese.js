@@ -3,6 +3,8 @@ async function dbSearch(strSearch) {
 	  locateFile: file => 'sql-wasm.wasm'
 	});
 
+	strSearch = strSearch.replace('si', 'shi').replace('tu', 'tsu');
+
 	var dataPromise = fetch('../assets/db/grammar.db').then(res => res.arrayBuffer());
 	var [SQL, buf] = await Promise.all([sqlPromise, dataPromise])
 	var db = new SQL.Database(new Uint8Array(buf));
@@ -10,11 +12,13 @@ async function dbSearch(strSearch) {
 	var stmt = db.prepare(`SELECT \`order\`, Grammar, GramMeaningFR FROM bunpro WHERE GramHira LIKE '%${strSearch}%' GROUP BY Grammar LIMIT 30`);
 	var result = stmt.getAsObject({});
 	
-	// var tbody = document.getElementById('tbody');
 	var strTable = '';
 	var rowResult = Object.values(result);
-	strRuby = `<ruby>${rowResult[1].replace(/\[/g, '<rt>').replace(/\]/g, '</rt>')}</ruby>`;
-	strTable += `<tr class="gramm"><td onclick="javascript:openDiv('${rowResult[0]}')"><a>${strRuby}</a><br>${rowResult[2]}</td></tr>`;
+
+	if (rowResult[1]) {
+		strRuby = `<ruby>${rowResult[1].replace(/\[/g, '<rt>').replace(/\]/g, '</rt>')}</ruby>`;
+		strTable += `<tr class="gramm"><td onclick="javascript:openDiv('${rowResult[0]}')"><a>${strRuby}</a><br>${rowResult[2]}</td></tr>`;
+	}
 
 	while(stmt.step()) {
 		const result = stmt.getAsObject();
@@ -22,22 +26,22 @@ async function dbSearch(strSearch) {
 		strRuby = `<ruby>${rowResult[1].replace(/\[/g, '<rt>').replace(/\]/g, '</rt>')}</ruby>`;
 		strTable += `<tr class="gramm"><td onclick="javascript:openDiv('${rowResult[0]}')"><a>${strRuby}</a><br>${rowResult[2]}</td></tr>`;
 	}
-	
-	// document.getElementById('tbody').innerHTML = strTable;
 
-
+	// Voc
 	dataPromise = fetch('../assets/db/vocab.db').then(res => res.arrayBuffer());
 	[SQL, buf] = await Promise.all([sqlPromise, dataPromise])
 	db = new SQL.Database(new Uint8Array(buf));
 
+	
 	stmt = db.prepare(`SELECT key, mean, \`order\` FROM Quezako WHERE version LIKE '%${strSearch}%' ORDER BY \`order\` LIMIT 30`);
 	result = stmt.getAsObject({});
 	
-	// var tbody = document.getElementById('tbody');
-	// var strTable = '';
 	var rowResult = Object.values(result);
-	strRuby = `<ruby>${rowResult[0].replace(/\[/g, '<rt>').replace(/\]/g, '</rt>')}</ruby>`;
-	strTable += `<tr class="voc"><td onclick="javascript:openDiv('${rowResult[0]}')"><a>${strRuby}</a><br>${rowResult[1]}</td></tr>`;
+	
+	if (rowResult[0]) {
+		strRuby = `<ruby>${rowResult[0].replace(/\[/g, '<rt>').replace(/\]/g, '</rt>')}</ruby>`;
+		strTable += `<tr class="voc"><td onclick="javascript:openDiv('${rowResult[0]}')"><a>${strRuby}</a><br>${rowResult[1]}</td></tr>`;
+	}
 
 	while(stmt.step()) {
 		const result = stmt.getAsObject();
@@ -59,7 +63,7 @@ async function openDiv(varKey) {
 		const [SQL, buf] = await Promise.all([sqlPromise, dataPromise])
 		const db = new SQL.Database(new Uint8Array(buf));
 	
-		const stmt = db.prepare(`SELECT tags, Grammar, GramMeaningFR, GrammarStructureFR, GrammarNuanceFR, Sentence, SentenceFR, SentenceNuanceFR, SupplementalLinksFR, OfflineResourcesFR, GramMeaning, GrammarStructure, GrammarNuance, SentenceEN, SentenceNuance, SupplementalLinks, OfflineResources, SentenceAudio FROM bunpro WHERE \`order\` = ${varKey}`);
+		const stmt = db.prepare(`SELECT tags, Grammar, GramMeaningFR, GrammarStructureFR, GrammarNuanceFR, Sentence, SentenceFR, SentenceNuanceFR, SupplementalLinksFR, OfflineResourcesFR, GramMeaning, GrammarStructure, GrammarNuance, SentenceEN, SentenceNuance, SupplementalLinks, OfflineResources, SentenceAudio, GramHira FROM bunpro WHERE \`order\` = ${varKey}`);
 		const result = stmt.getAsObject({});
 		var strTable = '';
 
@@ -101,21 +105,44 @@ async function openDiv(varKey) {
 				strTable += `<tr class="voc"><td><b>${key} :<br></b>${val}</td></tr>`;
 			}
 		}
+    
+    var kanji_key = result.kanji_only != '' ? result.kanji_only : result.key;
+    var kana_key = result.yomi;
+    var kanji_only = result.kanji_only;
+    strWordLinks = '';
+    
+    strWordLinks += ("Sound: <a href='https://assets.languagepod101.com/dictionary/japanese/audiomp3.php?kanji=" + kanji_key + "&kana=" + kana_key + "'><img src='../assets/img/favicon-7bb26f7041394a1ad90ad97f53dda21671c5dffb.ico' width=16 style='vertical-align:middle'>Pod101</a>");
+    strWordLinks += ("<a href='https://forvo.com/word/" + kanji_key + "/#ja'><img src='../assets/img/favicon-0c20667c2ac4a591da442c639c6b7367aa54fa13.ico' width=16 style='vertical-align:middle'>Forvo</a>");
+    strWordLinks += ("<a href='https://jisho.org/search/" + kanji_key + " " + kana_key + " ?_x_tr_sl=en&_x_tr_tl=fr'><img src='../assets/img/favicon-062c4a0240e1e6d72c38aa524742c2d558ee6234497d91dd6b75a182ea823d65.ico' width=16 style='vertical-align:middle'>Jisho</a>");
+    strWordLinks += ("<a href='https://jisho.org/search/" + kana_key + " ?_x_tr_sl=en&_x_tr_tl=fr'><img src='../assets/img/favicon-062c4a0240e1e6d72c38aa524742c2d558ee6234497d91dd6b75a182ea823d65.ico' width=16 style='vertical-align:middle'>Jisho kana</a>");
+    strWordLinks += ("<a href='https://uchisen.com/functions?search_term=" + kanji_key + "'><img src='../assets/img/favicon-16x16-7f3ea5f15b8cac1e6fa1f9922c0185debfb72296.png' style='vertical-align:middle'>Uchisen</a>");
+    strWordLinks += ("<a href='https://www.wanikani.com/vocabulary/" + kanji_key + "'><img src='../assets/img/favicon-36371d263f6e14d1cc3b9f9c97d19f7e84e7aa856560c5ebec1dd2e738690714.ico' width=16 style='vertical-align:middle'>WaniKani Voc</a>");
+    strWordLinks += ("<a href='https://quezako.com/tools/Anki/vocabulary.php?kanji=" + kanji_key + "&lang=en'><img src='../assets/img/favicon-f435b736ab8486b03527fbce945f3b765428a315.ico' width=16 style='vertical-align:middle'>Quezako Voc</a>");
+    strWordLinks += ("<a href='https://quezako.com/tools/Anki/anki.php?kanji=" + kanji_key + "&lang=en'><img src='../assets/img/favicon-f435b736ab8486b03527fbce945f3b765428a315.ico' width=16 style='vertical-align:middle'>Quezako Kanji</a>");
+    strWordLinks += ("<a href='https://www.google.com/search?q=" + kanji_key + " イラスト&tbm=isch&hl=fr&sa=X'><img src='../assets/img/favicon-49263695f6b0cdd72f45cf1b775e660fdc36c606.ico' width=16 style='vertical-align:middle'>Google Img</a>");
+
+    strKanjiLinks = "<br>$1 Kanji: <a href='https://quezako.com/tools/Anki/anki.php?kanji=$1'><img src='../assets/img/favicon-f435b736ab8486b03527fbce945f3b765428a315.ico' width=16 style='vertical-align:middle'>Quezako</a>";
+    strKanjiLinks += "<a href='https://rtega.be/chmn/?c=$1'><img src='../assets/img/favicon.png' width=16 style='vertical-align:middle'>Rtega</a>";
+    strKanjiLinks += "<a href='https://kanji.koohii.com/study/kanji/$1?_x_tr_sl=en&_x_tr_tl=fr'><img src='../assets/img/favicon-16x16.png' width=16 style='vertical-align:middle'>Koohii</a>";
+    strKanjiLinks += "<a href='https://www.wanikani.com/kanji/$1'><img src='../assets/img/favicon-36371d263f6e14d1cc3b9f9c97d19f7e84e7aa856560c5ebec1dd2e738690714.ico' width=16 style='vertical-align:middle'>WaniKani Kanji</a>";
+    strKanjiLinks += "<a href='https://www.wanikani.com/vocabulary/$1'><img src='../assets/img/favicon-36371d263f6e14d1cc3b9f9c97d19f7e84e7aa856560c5ebec1dd2e738690714.ico' width=16 style='vertical-align:middle'>WaniKani Voc</a>";
+    strKanjiLinks += "<a href='https://en.wiktionary.org/wiki/$1'><img src='../assets/img/en.ico' width=16 style='vertical-align:middle'>Wiktionary</a>";
+    strWordLinks += (kanji_only.replace(/(\p{Script=Han})/gu, strKanjiLinks));
+    
+		strTable += `<tr class="voc"><td>${strWordLinks}</td></tr>`;
 	}
 	
 	document.querySelector('.dynamicText').innerHTML = `<table>${strTable}</table>`;
 	document.getElementById('myModal').style.display = 'block';
 }
 
-document.addEventListener('DOMContentLoaded', function(event) { 
-	var input = document.getElementById('search');
-
+document.addEventListener('DOMContentLoaded', function() { 
 	var searchtimer;
+
 	window.addEventListener('DOMContentLoaded', () => {
 	  document.querySelector('#search').addEventListener('input', (e) => {
 		clearTimeout(searchtimer);
 		searchtimer = setTimeout(() => {
-			console.log(e.target.value);
 			if (e.target.value != '' && e.target.value != null) {
 				document.getElementById('tbody').innerHTML = 'loading...';
 				dbSearch(e.target.value);
@@ -127,7 +154,6 @@ document.addEventListener('DOMContentLoaded', function(event) {
 	});
 
 	var modal = document.getElementById('myModal');
-	var span = document.getElementsByClassName('close')[0];
 
 	document.querySelector('.close').onclick = function() {
 	  modal.style.display = 'none';
