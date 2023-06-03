@@ -27,7 +27,7 @@ td {
 a {
   text-decoration: none;
   cursor: pointer;
-  color: #0000ee;
+  color: #aaaaff;
 }
 a:visited {
   color: #551a8b;
@@ -75,4 +75,11 @@ a:visited {
   color: black;
   text-decoration: none;
   cursor: pointer;
+}
+
+.gramm {
+  background: #220000;
+}
+.voc {
+  background: #002200;
 }
