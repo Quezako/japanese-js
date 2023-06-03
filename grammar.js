@@ -7,7 +7,7 @@ async function dbSearch(strSearch) {
 	const [SQL, buf] = await Promise.all([sqlPromise, dataPromise])
 	const db = new SQL.Database(new Uint8Array(buf));
 
-	const stmt = db.prepare(`SELECT \`order\`, Grammar, GramMeaningFR FROM bunpro WHERE GramHira LIKE '%${strSearch}%' GROUP BY Grammar`);
+	const stmt = db.prepare(`SELECT \`order\`, Grammar, GramMeaningFR FROM bunpro WHERE GramHira LIKE '%${strSearch}%' GROUP BY Grammar LIMIT 30`);
 	const result = stmt.getAsObject({});
 	
 	var tbody = document.getElementById('tbody');
@@ -35,8 +35,8 @@ async function openDiv(intRow) {
 	const [SQL, buf] = await Promise.all([sqlPromise, dataPromise])
 	const db = new SQL.Database(new Uint8Array(buf));
 
-	const stmt = db.prepare('SELECT tags, Grammar, GramMeaningFR, GrammarStructureFR, GrammarNuanceFR, Sentence, SentenceFR, SentenceNuanceFR, SupplementalLinksFR, OfflineResourcesFR, GramMeaning, GrammarStructure, GrammarNuance, SentenceEN, SentenceNuance, SupplementalLinks, OfflineResources, SentenceAudio FROM bunpro WHERE `order` = $intRow');
-	const result = stmt.getAsObject({$intRow:intRow});
+	const stmt = db.prepare(`SELECT tags, Grammar, GramMeaningFR, GrammarStructureFR, GrammarNuanceFR, Sentence, SentenceFR, SentenceNuanceFR, SupplementalLinksFR, OfflineResourcesFR, GramMeaning, GrammarStructure, GrammarNuance, SentenceEN, SentenceNuance, SupplementalLinks, OfflineResources, SentenceAudio FROM bunpro WHERE \`order\` = ${intRow}`);
+	const result = stmt.getAsObject({});
 	
 	var tbody = document.getElementById('tbody');
 	var strTable = '';

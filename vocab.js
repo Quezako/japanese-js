@@ -7,7 +7,7 @@ async function dbSearch(strSearch) {
 	const [SQL, buf] = await Promise.all([sqlPromise, dataPromise])
 	const db = new SQL.Database(new Uint8Array(buf));
 
-	const stmt = db.prepare(`SELECT key, mean, \`order\` FROM Quezako WHERE version LIKE '%${strSearch}%' ORDER BY \`order\``);
+	const stmt = db.prepare(`SELECT key, mean, \`order\` FROM Quezako WHERE version LIKE '%${strSearch}%' ORDER BY \`order\` LIMIT 30`);
 	const result = stmt.getAsObject({});
 	
 	var tbody = document.getElementById('tbody');
