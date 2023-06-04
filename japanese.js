@@ -8,23 +8,24 @@ async function dbSearch(strSearch) {
 	var dataPromise = fetch('../assets/db/grammar.db').then(res => res.arrayBuffer());
 	var [SQL, buf] = await Promise.all([sqlPromise, dataPromise])
 	var db = new SQL.Database(new Uint8Array(buf));
-
-	var stmt = db.prepare(`SELECT \`order\`, Grammar, GramMeaningFR FROM bunpro WHERE GramHira LIKE '%${strSearch}%' GROUP BY Grammar LIMIT 30`);
+	var stmt = db.prepare(`SELECT \`order\`, Grammar, GramMeaningFR, tags FROM bunpro WHERE GramHira LIKE '%${strSearch}%' GROUP BY Grammar LIMIT 30`);
 	var result = stmt.getAsObject({});
-	
 	var strTable = '';
 	var rowResult = Object.values(result);
+	var regex = /BUNPRO::N([0-9])/i;
+	var found = result.tags.match(regex);
 
 	if (rowResult[1]) {
 		strRuby = `<ruby>${rowResult[1].replace(/\[/g, '<rt>').replace(/\]/g, '</rt>')}</ruby>`;
-		strTable += `<tr class="gramm"><td onclick="javascript:openDiv('${rowResult[0]}')"><a>${strRuby}</a><br>${rowResult[2]}</td></tr>`;
+		strTable += `<tr class="gramm JLPT${found[1]}"><td onclick="javascript:openDiv('${rowResult[0]}')"><a>${strRuby}</a><br>${rowResult[2]}</td></tr>`;
 	}
 
 	while(stmt.step()) {
 		const result = stmt.getAsObject();
+		var found = result.tags.match(regex);
 		rowResult = Object.values(result);
 		strRuby = `<ruby>${rowResult[1].replace(/\[/g, '<rt>').replace(/\]/g, '</rt>')}</ruby>`;
-		strTable += `<tr class="gramm"><td onclick="javascript:openDiv('${rowResult[0]}')"><a>${strRuby}</a><br>${rowResult[2]}</td></tr>`;
+		strTable += `<tr class="gramm JLPT${found[1]}"><td onclick="javascript:openDiv('${rowResult[0]}')"><a>${strRuby}</a><br>${rowResult[2]}</td></tr>`;
 	}
 
 	// Voc
@@ -32,22 +33,29 @@ async function dbSearch(strSearch) {
 	[SQL, buf] = await Promise.all([sqlPromise, dataPromise])
 	db = new SQL.Database(new Uint8Array(buf));
 
-	
-	stmt = db.prepare(`SELECT key, mean, \`order\` FROM Quezako WHERE version LIKE '%${strSearch}%' ORDER BY \`order\` LIMIT 30`);
+	stmt = db.prepare(`SELECT key, mean, \`order\`, tags FROM Quezako WHERE version LIKE '%${strSearch}%' ORDER BY \`order\` LIMIT 30`);
 	result = stmt.getAsObject({});
+	regex = /JLPT::([0-9])/i;
+	found = result.tags.match(regex);
 	
 	var rowResult = Object.values(result);
 	
 	if (rowResult[0]) {
 		strRuby = `<ruby>${rowResult[0].replace(/\[/g, '<rt>').replace(/\]/g, '</rt>')}</ruby>`;
-		strTable += `<tr class="voc"><td onclick="javascript:openDiv('${rowResult[0]}')"><a>${strRuby}</a><br>${rowResult[1]}</td></tr>`;
+		strTable += `<tr class="voc JLPT${found[1]}"><td onclick="javascript:openDiv('${rowResult[0]}')"><a>${strRuby}</a><br>${rowResult[1]}</td></tr>`;
 	}
 
 	while(stmt.step()) {
 		const result = stmt.getAsObject();
+		found = result.tags.match(regex);
+		
+		if (found == null) {
+			found = ['','0'];
+		}
+
 		rowResult = Object.values(result);
 		strRuby = `<ruby>${rowResult[0].replace(/\[/g, '<rt>').replace(/\]/g, '</rt>')}</ruby>`;
-		strTable += `<tr class="voc"><td onclick="javascript:openDiv('${rowResult[0]}')"><a>${strRuby}</a><br>${rowResult[1]}</td></tr>`;
+		strTable += `<tr class="voc JLPT${found[1]}""><td onclick="javascript:openDiv('${rowResult[0]}')"><a>${strRuby}</a><br>${rowResult[1]}</td></tr>`;
 	}
 	
 	document.getElementById('tbody').innerHTML = strTable;
@@ -142,6 +150,13 @@ document.addEventListener('DOMContentLoaded', function() {
 	window.addEventListener('DOMContentLoaded', () => {
 	  document.querySelector('#search').addEventListener('input', (e) => {
 		clearTimeout(searchtimer);
+		
+		let el = e.target;
+		let start = el.selectionStart;
+		let end = el.selectionEnd;
+		el.value = el.value.toLowerCase();
+		el.setSelectionRange(start, end);
+
 		searchtimer = setTimeout(() => {
 			if (e.target.value != '' && e.target.value != null) {
 				document.getElementById('tbody').innerHTML = 'loading...';
@@ -173,3 +188,25 @@ window.onkeydown = function( event ) {
         document.getElementById('myModal').style.display = 'none';
     }
 };
+
+function toggleTr(target) {
+	var y = document.getElementById('toggle_'+target);
+
+	if (y.style.background === "black") {
+	  y.style.background = "rgb(107, 107, 107)";
+	} else {
+	  y.style.background = "black";
+	}
+	
+	document.querySelectorAll('tr').forEach(function(element) {
+		element.style.display = "table-row";
+	});
+
+	document.querySelectorAll('button').forEach(function(element) {	
+		if (element.style.background === "black") {
+			document.querySelectorAll('tr.'+element.textContent).forEach(function(element) {
+				element.style.display = "none";
+			});
+		}
+	});
+}
