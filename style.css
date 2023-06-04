@@ -7,7 +7,8 @@
 * {
   font-family: Arial;
 }
-ruby, ruby span {
+ruby,
+ruby span {
   font-family: hgrkk;
 }
 ruby {
@@ -36,34 +37,27 @@ a:visited {
   color: #551a8b;
 }
 
-#list a {
-  /* font-size: 2em; */
-}
-
-/* The Modal (background) */
 .modal {
   display: none;
-  position: fixed; /* Stay in place */
-  z-index: 1; /* Sit on top */
+  position: fixed;
+  z-index: 1;
   left: 0;
   top: 0;
-  width: 100%; /* Full width */
-  height: 100%; /* Full height */
-  overflow: auto; /* Enable scroll if needed */
-  background-color: rgb(0, 0, 0); /* Fallback color */
-  background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgb(0, 0, 0);
+  background-color: rgba(0, 0, 0, 0.4);
 }
 
-/* Modal Content/Box */
 .modal-content {
   background-color: #fefefe;
   margin: 5px auto;
   padding: 5px;
   border: 1px solid #888;
-  width: 95%; /* Could be more or less, depending on screen size */
+  width: 95%;
 }
 
-/* The Close Button */
 .close {
   color: #aaa;
   font-size: 40px;
@@ -85,4 +79,28 @@ a:visited {
 }
 .voc {
   background: #002200;
+}
+
+.tag_N5,
+.tag_N4,
+.tag_N3,
+.tag_N2,
+.tag_N1,
+.tag_N0 {
+  float: right;
+}
+.tag_N5 {
+  color: blue;
+}
+.tag_N4 {
+  color: green;
+}
+.tag_N3 {
+  color: orange;
+}
+.tag_N2 {
+  color: purple;
+}
+.tag_N1 {
+  color: red;
 }
