@@ -16,8 +16,8 @@ async function dbSearch(strSearch) {
 	var found = result.tags.match(regex);
 
 	if (rowResult[1]) {
-		strRuby = `<ruby>${rowResult[1].replace(/\[/g, '<rt>').replace(/\]/g, '</rt>')}</ruby>`;
-		strTable += `<tr class="gramm JLPT${found[1]}"><td onclick="javascript:openDiv('${rowResult[0]}')"><a>${strRuby}</a><br>${rowResult[2]}</td></tr>`;
+		strRuby = `<ruby>${rowResult[1]}</ruby>`;
+		strTable += `<tr class="gramm N${found[1]}"><td onclick="javascript:openDiv('${rowResult[0]}')"><span class="tag_N${found[1]}">N${found[1]}</span><a>${strRuby}</a><br>${rowResult[2]}</td></tr>`;
 	}
 
 	while(stmt.step()) {
@@ -25,7 +25,7 @@ async function dbSearch(strSearch) {
 		var found = result.tags.match(regex);
 		rowResult = Object.values(result);
 		strRuby = `<ruby>${rowResult[1].replace(/\[/g, '<rt>').replace(/\]/g, '</rt>')}</ruby>`;
-		strTable += `<tr class="gramm JLPT${found[1]}"><td onclick="javascript:openDiv('${rowResult[0]}')"><a>${strRuby}</a><br>${rowResult[2]}</td></tr>`;
+		strTable += `<tr class="gramm N${found[1]}"><td onclick="javascript:openDiv('${rowResult[0]}')"><span class="tag_N${found[1]}">N${found[1]}</span><a>${strRuby}</a><br>${rowResult[2]}</td></tr>`;
 	}
 
 	// Voc
@@ -36,18 +36,30 @@ async function dbSearch(strSearch) {
 	stmt = db.prepare(`SELECT key, mean, \`order\`, tags FROM Quezako WHERE version LIKE '%${strSearch}%' ORDER BY \`order\` LIMIT 30`);
 	result = stmt.getAsObject({});
 	regex = /JLPT::([0-9])/i;
-	found = result.tags.match(regex);
+	// console.log(result.tags);
+	if (result.tags == null) {
+		found = ['','0'];
+	} else {
+		found = result.tags.match(regex);
+	}
+	if (found == null) {
+		found = ['','0'];
+	}
 	
 	var rowResult = Object.values(result);
 	
 	if (rowResult[0]) {
 		strRuby = `<ruby>${rowResult[0].replace(/\[/g, '<rt>').replace(/\]/g, '</rt>')}</ruby>`;
-		strTable += `<tr class="voc JLPT${found[1]}"><td onclick="javascript:openDiv('${rowResult[0]}')"><a>${strRuby}</a><br>${rowResult[1]}</td></tr>`;
+		strTable += `<tr class="voc N${found[1]}"><td onclick="javascript:openDiv('${rowResult[0]}')"><span class="tag_N${found[1]}">N${found[1]}</span><a>${strRuby}</a><br>${rowResult[1]}</td></tr>`;
 	}
 
 	while(stmt.step()) {
 		const result = stmt.getAsObject();
-		found = result.tags.match(regex);
+		if (result.tags == null) {
+			found = ['','0'];
+		} else {
+			found = result.tags.match(regex);
+		}
 		
 		if (found == null) {
 			found = ['','0'];
@@ -55,7 +67,7 @@ async function dbSearch(strSearch) {
 
 		rowResult = Object.values(result);
 		strRuby = `<ruby>${rowResult[0].replace(/\[/g, '<rt>').replace(/\]/g, '</rt>')}</ruby>`;
-		strTable += `<tr class="voc JLPT${found[1]}""><td onclick="javascript:openDiv('${rowResult[0]}')"><a>${strRuby}</a><br>${rowResult[1]}</td></tr>`;
+		strTable += `<tr class="voc N${found[1]}""><td onclick="javascript:openDiv('${rowResult[0]}')"><span class="tag_N${found[1]}">N${found[1]}</span><a>${strRuby}</a><br>${rowResult[1]}</td></tr>`;
 	}
 	
 	document.getElementById('tbody').innerHTML = strTable;
@@ -197,7 +209,7 @@ function toggleTr(target) {
 	} else {
 	  y.style.background = "black";
 	}
-	
+
 	document.querySelectorAll('tr').forEach(function(element) {
 		element.style.display = "table-row";
 	});
