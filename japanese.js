@@ -3,7 +3,7 @@ async function dbSearch(strSearch) {
     locateFile: (file) => "sql-wasm.wasm",
   });
 
-  strSearch = strSearch.replace("si", "shi").replace("tu", "tsu");
+  strSearch = strSearch.replace("si", "shi").replace("tu", "tsu").replace("ti", "chi");
 
   var dataPromise = fetch("../assets/db/grammar.db").then((res) =>
     res.arrayBuffer()
@@ -84,7 +84,7 @@ async function dbSearch(strSearch) {
 
   while (stmt.step()) {
     const result = stmt.getAsObject();
-    
+
     if (result.tags == null) {
       found = ["", "0"];
     } else {
@@ -230,8 +230,6 @@ document.addEventListener("DOMContentLoaded", function () {
         if (e.target.value != "" && e.target.value != null) {
           document.getElementById("tbody").innerHTML = "loading...";
           dbSearch(e.target.value);
-        } else {
-          document.getElementById("tbody").innerHTML = "";
         }
       }, 1000);
     });
