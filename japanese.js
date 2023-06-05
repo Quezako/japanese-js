@@ -29,7 +29,7 @@ async function dbSearch(strSearch) {
 
   if (rowResult[1]) {
     strRuby = `<ruby>${rowResult[1]}</ruby>`;
-    strTable += `<tr class="gramm N${found[1]}"><td onclick="javascript:openDiv('${rowResult[0]}')"><span class="tag_N${found[1]}">N${found[1]}</span><a>${strRuby}</a><br>${rowResult[2]}</td></tr>`;
+    strTable += `<tr class="gramm N${found[1]}"><td onclick="javascript:openDiv('${rowResult[1]}', 'gramm')"><span class="tag_N${found[1]}">N${found[1]}</span><a>${strRuby}</a><br>${rowResult[2]}</td></tr>`;
   }
 
   while (stmt.step()) {
@@ -50,7 +50,7 @@ async function dbSearch(strSearch) {
     strRuby = `<ruby>${rowResult[1]
       .replace(/\[/g, "<rt>")
       .replace(/\]/g, "</rt>")}</ruby>`;
-    strTable += `<tr class="gramm N${found[1]}"><td onclick="javascript:openDiv('${rowResult[0]}')"><span class="tag_N${found[1]}">N${found[1]}</span><a>${strRuby}</a><br>${rowResult[2]}</td></tr>`;
+    strTable += `<tr class="gramm N${found[1]}"><td onclick="javascript:openDiv('${rowResult[0]}', 'gramm')"><span class="tag_N${found[1]}">N${found[1]}</span><a>${strRuby}</a><br>${rowResult[2]}</td></tr>`;
   }
 
   // Voc
@@ -79,7 +79,7 @@ async function dbSearch(strSearch) {
     strRuby = `<ruby>${rowResult[0]
       .replace(/\[/g, "<rt>")
       .replace(/\]/g, "</rt>")}</ruby>`;
-    strTable += `<tr class="voc N${found[1]}"><td onclick="javascript:openDiv('${rowResult[0]}')"><span class="tag_N${found[1]}">N${found[1]}</span><a>${strRuby}</a><br>${rowResult[1]}</td></tr>`;
+    strTable += `<tr class="voc N${found[1]}"><td onclick="javascript:openDiv('${rowResult[0]}', 'voc')"><span class="tag_N${found[1]}">N${found[1]}</span><a>${strRuby}</a><br>${rowResult[1]}</td></tr>`;
   }
 
   while (stmt.step()) {
@@ -99,18 +99,20 @@ async function dbSearch(strSearch) {
     strRuby = `<ruby>${rowResult[0]
       .replace(/\[/g, "<rt>")
       .replace(/\]/g, "</rt>")}</ruby>`;
-    strTable += `<tr class="voc N${found[1]}""><td onclick="javascript:openDiv('${rowResult[0]}')"><span class="tag_N${found[1]}">N${found[1]}</span><a>${strRuby}</a><br>${rowResult[1]}</td></tr>`;
+    strTable += `<tr class="voc N${found[1]}""><td onclick="javascript:openDiv('${rowResult[0]}', 'voc')"><span class="tag_N${found[1]}">N${found[1]}</span><a>${strRuby}</a><br>${rowResult[1]}</td></tr>`;
   }
+  
+  stmt.free();
 
   document.getElementById("tbody").innerHTML = strTable;
 }
 
-async function openDiv(varKey) {
+async function openDiv(strKey, strType) {
   const sqlPromise = await initSqlJs({
     locateFile: (file) => "sql-wasm.wasm",
   });
 
-  if (Number.isInteger(varKey * 1)) {
+  if (strType == 'gramm') {
     const dataPromise = fetch("../assets/db/grammar.db").then((res) =>
       res.arrayBuffer()
     );
@@ -118,9 +120,9 @@ async function openDiv(varKey) {
     const db = new SQL.Database(new Uint8Array(buf));
 
     const stmt = db.prepare(
-      `SELECT tags, Grammar, GramMeaningFR, GrammarStructureFR, GrammarNuanceFR, Sentence, SentenceFR, SentenceNuanceFR, SupplementalLinksFR, OfflineResourcesFR, GramMeaning, GrammarStructure, GrammarNuance, SentenceEN, SentenceNuance, SupplementalLinks, OfflineResources, SentenceAudio, GramHira FROM bunpro WHERE \`order\` = ${varKey}`
+      `SELECT tags, Grammar, GramMeaningFR, GrammarStructureFR, GrammarNuanceFR, Sentence, SentenceFR, SentenceNuanceFR, SupplementalLinksFR, OfflineResourcesFR, GramMeaning, GrammarStructure, GrammarNuance, SentenceEN, SentenceNuance, SupplementalLinks, OfflineResources, SentenceAudio, GramHira FROM bunpro WHERE Grammar = "${strKey}"`
     );
-    const result = stmt.getAsObject({});
+    var result = stmt.getAsObject({});
     var strTable = "";
 
     for (var [key, val] of Object.entries(result)) {
@@ -130,18 +132,44 @@ async function openDiv(varKey) {
           val = "";
           arrVal.forEach(
             (subVal) =>
-              (val += `<ruby>${subVal
-                .toString()
-                .replace(/\[/g, "<rt>")
-                .replace(/\]/g, "</rt>")}</ruby>`)
+              (val += `<ruby>${subVal.toString().replace(/\[/g, "<rt>").replace(/\]/g, "</rt>")}</ruby>`)
           );
-          val = val
-            .replace(/{{c1::/g, '<span style="color:red">')
-            .replace(/}}/g, "</span>");
+          val = val.replace(/{{c1::/g, '<span style="color:red">').replace(/}}/g, "</span>");
+        }  else if (key == "SentenceAudio") {
+          val = val.replace(/\[sound:/g, '<audio controls><source src="../assets/img/').replace(/\]/g, '" /></audio>');
         }
-        strTable += `<tr class="gramm"><td><b>${key} :<br></b>${val}</td></tr>`;
+        strTable += `<tr class="gramm" id="gramm_${key}"><td><b>${key} :<br></b>${val}</td></tr>`;
       }
     }
+
+    strTable2 = "";
+    while (stmt.step()) {
+      row = stmt.getAsObject();
+      for (var [key, val] of Object.entries(row)) {
+        if (val != null) {
+          if (key == "SentenceAudio") {
+            val = val.replace(/\[sound:/g, '<audio controls><source src="../assets/img/').replace(/\]/g, '" /></audio>');
+          }
+
+          if (key == "Sentence" || key == "Grammar") {
+            arrVal = val.split(" ");
+            val = "";
+            arrVal.forEach(
+              (subVal) =>
+                (val += `<ruby>${subVal.toString().replace(/\[/g, "<rt>").replace(/\]/g, "</rt>")}</ruby>`)
+            );
+            val = val.replace(/{{c1::/g, '<span style="color:red">').replace(/}}/g, "</span>");
+          }
+
+          if (key == "Sentence" || key == "SentenceFR" || key == "SentenceNuanceFR" || key == "SentenceAudio") {
+            strTable += `<tr class="gramm" id="gramm_${key}"><td><b>${key} :<br></b>${val}</td></tr>`;
+          } else if (key == "SentenceEN" || key == "SentenceNuance") {
+            strTable2 += `<tr class="gramm" id="gramm_${key}"><td><b>${key} :<br></b>${val}</td></tr>`;
+          }
+        }
+      }
+    }
+    strTable += strTable2;
   } else {
     const dataPromise = fetch("../assets/db/vocab.db").then((res) =>
       res.arrayBuffer()
@@ -150,7 +178,7 @@ async function openDiv(varKey) {
     const db = new SQL.Database(new Uint8Array(buf));
 
     const stmt = db.prepare(
-      `SELECT Tags, key, yomi, mean, voc_image, en_mean, voc_notes_personal, kanji_mnemo_personal, read_mnemo_personal, voc_sentence_ja, voc_sentence_fr, voc_sentence_img, chmn_mean, fr_components2, voc_alts, fr_mean_mnemo_wani, fr_compo_wani_name, fr_story_wani_mean, fr_mean_mnemo_wani2, fr_mean_mnemo_wani3, en_reading_info, en_reading_mnemonic, en_reading_mnemonic2, fr_chmn_mnemo, en_chmn_mnemo, kun_pre, kun_post, voc_furi, kanji_only, onyomi, kunyomi, kb_img, fr_kb_desc, jkm, en_jkm_headline, en_jkm_subtitle, fr_story, fr_component, fr_koohii_story_1, fr_koohii_story_2, fr_koohii_3, fr_story_rtk, fr_memrise_hint, fr_story_rtk_comment, fr_components3, compo_wani, fr_word, stroke_order, fr_notes, fr_voc_notes, en_heisigcomment, chmn_simple, chmn_lookalike, chmn_ref, kd_used_in_kanjis, primitive_of, usually_kana, version, \`order\`, voc_mp3, voc_sentence_audio FROM Quezako WHERE key = "${varKey}"`
+      `SELECT Tags, key, yomi, mean, voc_image, en_mean, voc_notes_personal, kanji_mnemo_personal, read_mnemo_personal, voc_sentence_ja, voc_sentence_fr, voc_sentence_img, chmn_mean, fr_components2, voc_alts, fr_mean_mnemo_wani, fr_compo_wani_name, fr_story_wani_mean, fr_mean_mnemo_wani2, fr_mean_mnemo_wani3, en_reading_info, en_reading_mnemonic, en_reading_mnemonic2, fr_chmn_mnemo, en_chmn_mnemo, kun_pre, kun_post, voc_furi, kanji_only, onyomi, kunyomi, kb_img, fr_kb_desc, jkm, en_jkm_headline, en_jkm_subtitle, fr_story, fr_component, fr_koohii_story_1, fr_koohii_story_2, fr_koohii_3, fr_story_rtk, fr_memrise_hint, fr_story_rtk_comment, fr_components3, compo_wani, fr_word, stroke_order, fr_notes, fr_voc_notes, en_heisigcomment, chmn_simple, chmn_lookalike, chmn_ref, kd_used_in_kanjis, primitive_of, usually_kana, version, \`order\`, voc_mp3, voc_sentence_audio FROM Quezako WHERE key = "${strKey}"`
     );
     const result = stmt.getAsObject({});
     var strTable = "";
@@ -180,6 +208,8 @@ async function openDiv(varKey) {
         strTable += `<tr class="voc"><td><b>${key} :<br></b>${val}</td></tr>`;
       }
     }
+
+    stmt.free();
 
     var kanji_key = result.kanji_only != "" ? result.kanji_only : result.key;
     var kana_key = result.yomi;
