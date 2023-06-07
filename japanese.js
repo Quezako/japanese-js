@@ -5,13 +5,17 @@ async function dbSearch(strSearch) {
 
   strSearch = strSearch.replace("si", "shi").replace("tu", "tsu").replace("ti", "chi");
 
+  // Grammar
   var dataPromise = fetch("../assets/db/grammar.db").then((res) =>
     res.arrayBuffer()
   );
   var [SQL, buf] = await Promise.all([sqlPromise, dataPromise]);
   var db = new SQL.Database(new Uint8Array(buf));
   var stmt = db.prepare(
-    `SELECT \`order\`, Grammar, GramMeaningFR, tags FROM bunpro WHERE GramHira LIKE '%${strSearch}%' GROUP BY Grammar LIMIT 30`
+    `SELECT \`order\`, Grammar, GramMeaningFR, tags FROM bunpro 
+    WHERE GramHira LIKE '%${strSearch}%' GROUP BY Grammar 
+    ORDER BY (CASE WHEN GramHira = '${strSearch}%' THEN 1 WHEN GramHira LIKE '${strSearch}%%' THEN 2 ELSE 3 END), tags DESC
+    LIMIT 30`
   );
   var result = stmt.getAsObject({});
   var strTable = "";
@@ -50,16 +54,19 @@ async function dbSearch(strSearch) {
     strRuby = `<ruby>${rowResult[1]
       .replace(/\[/g, "<rt>")
       .replace(/\]/g, "</rt>")}</ruby>`;
-    strTable += `<tr class="gramm N${found[1]}"><td onclick="javascript:openDiv('${rowResult[0]}', 'gramm')"><span class="tag_N${found[1]}">N${found[1]}</span><a>${strRuby}</a><br>${rowResult[2]}</td></tr>`;
+    strTable += `<tr class="gramm N${found[1]}"><td onclick="javascript:openDiv('${rowResult[1]}', 'gramm')"><span class="tag_N${found[1]}">N${found[1]}</span><a>${strRuby}</a><br>${rowResult[2]}</td></tr>`;
   }
 
-  // Voc
+  // Vocabulary
   dataPromise = fetch("../assets/db/vocab.db").then((res) => res.arrayBuffer());
   [SQL, buf] = await Promise.all([sqlPromise, dataPromise]);
   db = new SQL.Database(new Uint8Array(buf));
 
   stmt = db.prepare(
-    `SELECT key, mean, \`order\`, tags FROM Quezako WHERE version LIKE '%${strSearch}%' ORDER BY \`order\` LIMIT 30`
+    `SELECT key, mean, \`order\`, tags FROM Quezako 
+    WHERE version LIKE '%${strSearch}%' 
+    ORDER BY (CASE WHEN version = '${strSearch}' THEN 1 WHEN version LIKE '${strSearch}%' THEN 2 ELSE 3 END), \`order\` 
+    LIMIT 30`
   );
   result = stmt.getAsObject({});
   regex = /JLPT::([0-9])/i;
@@ -119,9 +126,9 @@ async function openDiv(strKey, strType) {
     const [SQL, buf] = await Promise.all([sqlPromise, dataPromise]);
     const db = new SQL.Database(new Uint8Array(buf));
 
-    const stmt = db.prepare(
-      `SELECT tags, Grammar, GramMeaningFR, GrammarStructureFR, GrammarNuanceFR, Sentence, SentenceFR, SentenceNuanceFR, SupplementalLinksFR, OfflineResourcesFR, GramMeaning, GrammarStructure, GrammarNuance, SentenceEN, SentenceNuance, SupplementalLinks, OfflineResources, SentenceAudio, GramHira FROM bunpro WHERE Grammar = "${strKey}"`
-    );
+    const strSql = `SELECT tags, Grammar, GramMeaningFR, GrammarStructureFR, GrammarNuanceFR, Sentence, SentenceFR, SentenceNuanceFR, SupplementalLinksFR, OfflineResourcesFR, GramMeaning, GrammarStructure, GrammarNuance, SentenceEN, SentenceNuance, SupplementalLinks, OfflineResources, SentenceAudio, GramHira 
+    FROM bunpro WHERE Grammar = "${strKey}"`;
+    const stmt = db.prepare(strSql);
     var result = stmt.getAsObject({});
     var strTable = "";
 
@@ -178,7 +185,8 @@ async function openDiv(strKey, strType) {
     const db = new SQL.Database(new Uint8Array(buf));
 
     const stmt = db.prepare(
-      `SELECT Tags, key, yomi, mean, voc_image, en_mean, voc_notes_personal, kanji_mnemo_personal, read_mnemo_personal, voc_sentence_ja, voc_sentence_fr, voc_sentence_img, chmn_mean, fr_components2, voc_alts, fr_mean_mnemo_wani, fr_compo_wani_name, fr_story_wani_mean, fr_mean_mnemo_wani2, fr_mean_mnemo_wani3, en_reading_info, en_reading_mnemonic, en_reading_mnemonic2, fr_chmn_mnemo, en_chmn_mnemo, kun_pre, kun_post, voc_furi, kanji_only, onyomi, kunyomi, kb_img, fr_kb_desc, jkm, en_jkm_headline, en_jkm_subtitle, fr_story, fr_component, fr_koohii_story_1, fr_koohii_story_2, fr_koohii_3, fr_story_rtk, fr_memrise_hint, fr_story_rtk_comment, fr_components3, compo_wani, fr_word, stroke_order, fr_notes, fr_voc_notes, en_heisigcomment, chmn_simple, chmn_lookalike, chmn_ref, kd_used_in_kanjis, primitive_of, usually_kana, version, \`order\`, voc_mp3, voc_sentence_audio FROM Quezako WHERE key = "${strKey}"`
+      `SELECT Tags, key, yomi, mean, voc_image, en_mean, voc_notes_personal, kanji_mnemo_personal, read_mnemo_personal, voc_sentence_ja, voc_sentence_fr, voc_sentence_img, chmn_mean, fr_components2, voc_alts, fr_mean_mnemo_wani, fr_compo_wani_name, fr_story_wani_mean, fr_mean_mnemo_wani2, fr_mean_mnemo_wani3, en_reading_info, en_reading_mnemonic, en_reading_mnemonic2, fr_chmn_mnemo, en_chmn_mnemo, kun_pre, kun_post, voc_furi, kanji_only, onyomi, kunyomi, kb_img, fr_kb_desc, jkm, en_jkm_headline, en_jkm_subtitle, fr_story, fr_component, fr_koohii_story_1, fr_koohii_story_2, fr_koohii_3, fr_story_rtk, fr_memrise_hint, fr_story_rtk_comment, fr_components3, compo_wani, fr_word, stroke_order, fr_notes, fr_voc_notes, en_heisigcomment, chmn_simple, chmn_lookalike, chmn_ref, kd_used_in_kanjis, primitive_of, usually_kana, version, \`order\`, voc_mp3, voc_sentence_audio 
+      FROM Quezako WHERE key = "${strKey}"`
     );
     const result = stmt.getAsObject({});
     var strTable = "";
@@ -211,9 +219,8 @@ async function openDiv(strKey, strType) {
 
     stmt.free();
 
-    var kanji_key = result.kanji_only != "" ? result.kanji_only : result.key;
+    var kanji_key = result.kanji_only ? result.kanji_only : result.key;
     var kana_key = result.yomi;
-    var kanji_only = result.kanji_only;
     strWordLinks = "";
 
     strWordLinks += `Sound: <a href='https://assets.languagepod101.com/dictionary/japanese/audiomp3.php?kanji=${kanji_key}&kana=${kana_key}'><img src='../assets/img/favicon-7bb26f7041394a1ad90ad97f53dda21671c5dffb.ico' width=16 style='vertical-align:middle'>Pod101</a>`;
@@ -232,7 +239,7 @@ async function openDiv(strKey, strType) {
     strKanjiLinks += "<a href='https://www.wanikani.com/kanji/$1'><img src='../assets/img/favicon-36371d263f6e14d1cc3b9f9c97d19f7e84e7aa856560c5ebec1dd2e738690714.ico' width=16 style='vertical-align:middle'>WaniKani Kanji</a>";
     strKanjiLinks += "<a href='https://www.wanikani.com/vocabulary/$1'><img src='../assets/img/favicon-36371d263f6e14d1cc3b9f9c97d19f7e84e7aa856560c5ebec1dd2e738690714.ico' width=16 style='vertical-align:middle'>WaniKani Voc</a>";
     strKanjiLinks += "<a href='https://en.wiktionary.org/wiki/$1'><img src='../assets/img/en.ico' width=16 style='vertical-align:middle'>Wiktionary</a>";
-    strWordLinks += kanji_only.replace(/(\p{Script=Han})/gu, strKanjiLinks);
+    strWordLinks += kanji_key.replace(/(\p{Script=Han})/gu, strKanjiLinks);
 
     strTable += `<tr class="voc"><td>${strWordLinks}</td></tr>`;
   }
