@@ -16,13 +16,11 @@ async function dbSearch(strSearch) {
     zy: "j",
     dy: "j",
   };
-  
+
   var re = new RegExp(Object.keys(mapObj).join("|"), "gi");
   strSearch = strSearch.replace(re, function (matched) {
     return mapObj[matched];
   });
-  
-  // console.log(strSearch);
 
   // Grammar
   var dataPromise = fetch("../assets/db/grammar.db").then((res) =>
