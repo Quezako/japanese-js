@@ -1,4 +1,4 @@
-// TODO: font from css, audio.
+// TODO: clauses if dans template ^/ #/
 
 var strFront = "";
 var strBack = "";
@@ -27,7 +27,6 @@ async function dbSearch() {
   const queryString = window.location.search;
   const urlParams = new URLSearchParams(queryString);
   const strSearch = urlParams.get("kanji");
-  console.log(strSearch);
 
   const sqlPromise = await initSqlJs({
     locateFile: (file) => "../../js/sql-wasm.wasm",
@@ -53,12 +52,10 @@ async function dbSearch() {
           strReturn = result[strText]
             ? result[strText].replace(/\[.+\]/gi, "")
             : "";
-          console.log(strReturn);
         } else if (strDisplay == "kana") {
           strReturn = result[strText]
             ? result[strText].replace(/.+\[(.+)\]/gi, "$1")
             : "";
-          console.log(strReturn);
         } else if (strDisplay == "furigana") {
           strReturn = result[strText]
             ? result[strText].replace(
@@ -66,9 +63,16 @@ async function dbSearch() {
                 "<ruby>$1<rt>$2</rt></ruby>"
               )
             : "";
-          console.log(strReturn);
         }
       }
+    );
+
+    strReturn = strReturn.replace(
+      /\[sound:([^\]]+)\]/g,
+      `
+        <audio hidden id="player$1" controls src="$1" /></audio>
+        <div class="player" onclick="player = document.getElementById('player$1'); if(player.paused) {player.play()} else {player.pause();player.currentTime = 0}"></div>
+      `
     );
 
     return strReturn;
