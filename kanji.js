@@ -1,5 +1,3 @@
-// TODO: clauses if dans template ^/ #/
-
 var strFront = "";
 var strBack = "";
 
@@ -42,9 +40,31 @@ async function dbSearch() {
   const result = stmt.getAsObject({});
   strTpl = strBack.replace(/{{FrontSide}}/g, strFront);
   strTpl = strTpl.replace(/(edit):/g, "");
-  strTpl = strTpl.replace(/{{(#|\/|\^)[^}]+}}/g, "");
+  strTpl = strTpl.replace(/(hint):/g, "");
+  strTpl = strTpl.replace(
+    /{{#([^}]+)}}(.+){{\/\1}}/g,
+    function (strOrig, strMatch, strMatch2) {
+      if (result[strMatch]) {
+        return strMatch2;
+      } else {
+        return "";
+      }
+    }
+  );
+  strTpl = strTpl.replace(
+    /{{\^([^}]+)}}(.+){{\/\1}}/g,
+    function (strOrig, strMatch, strMatch2) {
+      if (!result[strMatch]) {
+        return strMatch2;
+      } else {
+        return "";
+      }
+    }
+  );
+
   strTpl = strTpl.replace(/{{([^}]+)}}/gi, function (strOrig, strMatch) {
     strReturn = result[strMatch] ? result[strMatch] : "";
+
     strMatch = strMatch.replace(
       /(kanji|kana|furigana):(.+)/g,
       function (strOrig, strDisplay, strText) {
