@@ -3,7 +3,26 @@ async function dbSearch(strSearch) {
     locateFile: (file) => "sql-wasm.wasm",
   });
 
-  strSearch = strSearch.replace("si", "shi").replace("tu", "tsu").replace("ti", "chi");
+  var mapObj = {
+    si: "shi",
+    tu: "tsu",
+    ti: "chi",
+    ty: "ch",
+    hu: "fu",
+    zi: "ji",
+    di: "ji",
+    du: "zu",
+    sy: "sh",
+    zy: "j",
+    dy: "j",
+  };
+  
+  var re = new RegExp(Object.keys(mapObj).join("|"), "gi");
+  strSearch = strSearch.replace(re, function (matched) {
+    return mapObj[matched];
+  });
+  
+  // console.log(strSearch);
 
   // Grammar
   var dataPromise = fetch("../assets/db/grammar.db").then((res) =>
@@ -70,7 +89,7 @@ async function dbSearch(strSearch) {
   );
   result = stmt.getAsObject({});
   regex = /JLPT::([0-9])/i;
-  
+
   if (result.tags == null) {
     found = ["", "0"];
   } else {
@@ -108,7 +127,7 @@ async function dbSearch(strSearch) {
       .replace(/\]/g, "</rt>")}</ruby>`;
     strTable += `<tr class="voc N${found[1]}""><td onclick="javascript:openDiv('${rowResult[0]}', 'voc')"><span class="tag_N${found[1]}">N${found[1]}</span><a>${strRuby}</a><br>${rowResult[1]}</td></tr>`;
   }
-  
+
   stmt.free();
 
   document.getElementById("tbody").innerHTML = strTable;
@@ -119,7 +138,7 @@ async function openDiv(strKey, strType) {
     locateFile: (file) => "sql-wasm.wasm",
   });
 
-  if (strType == 'gramm') {
+  if (strType == "gramm") {
     const dataPromise = fetch("../assets/db/grammar.db").then((res) =>
       res.arrayBuffer()
     );
@@ -139,11 +158,18 @@ async function openDiv(strKey, strType) {
           val = "";
           arrVal.forEach(
             (subVal) =>
-              (val += `<ruby>${subVal.toString().replace(/\[/g, "<rt>").replace(/\]/g, "</rt>")}</ruby>`)
+              (val += `<ruby>${subVal
+                .toString()
+                .replace(/\[/g, "<rt>")
+                .replace(/\]/g, "</rt>")}</ruby>`)
           );
-          val = val.replace(/{{c1::/g, '<span style="color:red">').replace(/}}/g, "</span>");
-        }  else if (key == "SentenceAudio") {
-          val = val.replace(/\[sound:/g, '<audio controls><source src="../assets/img/').replace(/\]/g, '" /></audio>');
+          val = val
+            .replace(/{{c1::/g, '<span style="color:red">')
+            .replace(/}}/g, "</span>");
+        } else if (key == "SentenceAudio") {
+          val = val
+            .replace(/\[sound:/g, '<audio controls><source src="../assets/img/')
+            .replace(/\]/g, '" /></audio>');
         }
         strTable += `<tr class="gramm" id="gramm_${key}"><td><b>${key} :<br></b>${val}</td></tr>`;
       }
@@ -155,7 +181,12 @@ async function openDiv(strKey, strType) {
       for (var [key, val] of Object.entries(row)) {
         if (val != null) {
           if (key == "SentenceAudio") {
-            val = val.replace(/\[sound:/g, '<audio controls><source src="../assets/img/').replace(/\]/g, '" /></audio>');
+            val = val
+              .replace(
+                /\[sound:/g,
+                '<audio controls><source src="../assets/img/'
+              )
+              .replace(/\]/g, '" /></audio>');
           }
 
           if (key == "Sentence" || key == "Grammar") {
@@ -163,12 +194,22 @@ async function openDiv(strKey, strType) {
             val = "";
             arrVal.forEach(
               (subVal) =>
-                (val += `<ruby>${subVal.toString().replace(/\[/g, "<rt>").replace(/\]/g, "</rt>")}</ruby>`)
+                (val += `<ruby>${subVal
+                  .toString()
+                  .replace(/\[/g, "<rt>")
+                  .replace(/\]/g, "</rt>")}</ruby>`)
             );
-            val = val.replace(/{{c1::/g, '<span style="color:red">').replace(/}}/g, "</span>");
+            val = val
+              .replace(/{{c1::/g, '<span style="color:red">')
+              .replace(/}}/g, "</span>");
           }
 
-          if (key == "Sentence" || key == "SentenceFR" || key == "SentenceNuanceFR" || key == "SentenceAudio") {
+          if (
+            key == "Sentence" ||
+            key == "SentenceFR" ||
+            key == "SentenceNuanceFR" ||
+            key == "SentenceAudio"
+          ) {
             strTable += `<tr class="gramm" id="gramm_${key}"><td><b>${key} :<br></b>${val}</td></tr>`;
           } else if (key == "SentenceEN" || key == "SentenceNuance") {
             strTable2 += `<tr class="gramm" id="gramm_${key}"><td><b>${key} :<br></b>${val}</td></tr>`;
@@ -233,12 +274,18 @@ async function openDiv(strKey, strType) {
     strWordLinks += `<a href='https://quezako.com/tools/Anki/anki.php?kanji=${kanji_key}&lang=en'><img src='../assets/img/favicon-f435b736ab8486b03527fbce945f3b765428a315.ico' width=16 style='vertical-align:middle'>Quezako Kanji</a>`;
     strWordLinks += `<a href='https://www.google.com/search?q=${kanji_key} イラスト&tbm=isch&hl=fr&sa=X'><img src='../assets/img/favicon-49263695f6b0cdd72f45cf1b775e660fdc36c606.ico' width=16 style='vertical-align:middle'>Google Img</a>`;
 
-    strKanjiLinks = "<br>$1 Kanji: <a href='https://quezako.com/tools/Anki/anki.php?kanji=$1'><img src='../assets/img/favicon-f435b736ab8486b03527fbce945f3b765428a315.ico' width=16 style='vertical-align:middle'>Quezako</a>";
-    strKanjiLinks += "<a href='https://rtega.be/chmn/?c=$1'><img src='../assets/img/favicon.png' width=16 style='vertical-align:middle'>Rtega</a>";
-    strKanjiLinks += "<a href='https://kanji.koohii.com/study/kanji/$1?_x_tr_sl=en&_x_tr_tl=fr'><img src='../assets/img/favicon-16x16.png' width=16 style='vertical-align:middle'>Koohii</a>";
-    strKanjiLinks += "<a href='https://www.wanikani.com/kanji/$1'><img src='../assets/img/favicon-36371d263f6e14d1cc3b9f9c97d19f7e84e7aa856560c5ebec1dd2e738690714.ico' width=16 style='vertical-align:middle'>WaniKani Kanji</a>";
-    strKanjiLinks += "<a href='https://www.wanikani.com/vocabulary/$1'><img src='../assets/img/favicon-36371d263f6e14d1cc3b9f9c97d19f7e84e7aa856560c5ebec1dd2e738690714.ico' width=16 style='vertical-align:middle'>WaniKani Voc</a>";
-    strKanjiLinks += "<a href='https://en.wiktionary.org/wiki/$1'><img src='../assets/img/en.ico' width=16 style='vertical-align:middle'>Wiktionary</a>";
+    strKanjiLinks =
+      "<br>$1 Kanji: <a href='https://quezako.com/tools/Anki/anki.php?kanji=$1'><img src='../assets/img/favicon-f435b736ab8486b03527fbce945f3b765428a315.ico' width=16 style='vertical-align:middle'>Quezako</a>";
+    strKanjiLinks +=
+      "<a href='https://rtega.be/chmn/?c=$1'><img src='../assets/img/favicon.png' width=16 style='vertical-align:middle'>Rtega</a>";
+    strKanjiLinks +=
+      "<a href='https://kanji.koohii.com/study/kanji/$1?_x_tr_sl=en&_x_tr_tl=fr'><img src='../assets/img/favicon-16x16.png' width=16 style='vertical-align:middle'>Koohii</a>";
+    strKanjiLinks +=
+      "<a href='https://www.wanikani.com/kanji/$1'><img src='../assets/img/favicon-36371d263f6e14d1cc3b9f9c97d19f7e84e7aa856560c5ebec1dd2e738690714.ico' width=16 style='vertical-align:middle'>WaniKani Kanji</a>";
+    strKanjiLinks +=
+      "<a href='https://www.wanikani.com/vocabulary/$1'><img src='../assets/img/favicon-36371d263f6e14d1cc3b9f9c97d19f7e84e7aa856560c5ebec1dd2e738690714.ico' width=16 style='vertical-align:middle'>WaniKani Voc</a>";
+    strKanjiLinks +=
+      "<a href='https://en.wiktionary.org/wiki/$1'><img src='../assets/img/en.ico' width=16 style='vertical-align:middle'>Wiktionary</a>";
     strWordLinks += kanji_key.replace(/(\p{Script=Han})/gu, strKanjiLinks);
 
     strTable += `<tr class="voc"><td>${strWordLinks}</td></tr>`;
