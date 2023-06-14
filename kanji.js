@@ -1,6 +1,9 @@
 /**
  * TODO:
+ * introuvable ? 隽
+ * split into quezako.js
  * fetch radicals details, from which fields? maximum recursion?
+ * chmn DB in french.
  * responsive, size: fonts.
  */
 var strFront = "";
@@ -103,50 +106,9 @@ async function dbSearch() {
 
   document.querySelector("body").innerHTML = strTpl;
 
-  // Auto fetch kanji details + radical details.
-  const dataPromise2 = fetch("../db/chmn-full.db").then((res) =>
-    res.arrayBuffer()
-  );
-  const [SQL2, buf2] = await Promise.all([sqlPromise, dataPromise2]);
-  const db2 = new SQL.Database(new Uint8Array(buf2));
-
-  strKanjiOnly = strSearch.replace(/[^一-龯々ヶ]/gi, "");
-  strDetails = '<span id="each_details">';
-
-  Array.from(strKanjiOnly).forEach((element) => {
-    strDetails += `<details><summary>${element} details</summary>`;
-
-    stmt = db.prepare(
-      `SELECT mean, chmn_mean, fr_mean_mnemo_wani, fr_story, fr_story_wani_mean, fr_koohii_story_1, fr_koohii_story_2, fr_mean_mnemo_wani2, fr_chmn_mnemo, Tags FROM Quezako WHERE key = "${element}" OR key LIKE "${element}[%"`
-    );
-    result = stmt.getAsObject({});
-    for (var [key, val] of Object.entries(result)) {
-      strDetails += val ? `* ${key}: ${val}<br />` : "";
-    }
-
-    stmt = db.prepare(
-      `SELECT kanji_mnemo_personal FROM Quezako WHERE kanji_mnemo_personal LIKE "%${element} :%"`
-    );
-    result = stmt.getAsObject({});
-    for (var [key, val] of Object.entries(result)) {
-      strDetails += val ? `* ${key}: ${val}<br />` : "";
-    }
-
-    stmt = db2.prepare(
-      `SELECT * FROM \`chmn-full2\` WHERE hanzi = "${element}" OR hanzi2 = "${element}" OR alike = "${element}"`
-    );
-    result = stmt.getAsObject({});
-    for (var [key, val] of Object.entries(result)) {
-      strDetails += val ? `* ${key}: ${val}<br />` : "";
-    }
-    strDetails += "</details>";
-  });
-  strDetails += '</span">';
-
-  document.querySelector("#mnemo_personal").innerHTML += strDetails;
-
   // Anki script.
   var script = document.createElement("script");
-  script.src = "quezako.js";
+  script.src = "https://cdn.jsdelivr.net/gh/quezako/anki/quezako.js";
+  // script.src = "../../anki/quezako.js";
   document.head.appendChild(script);
 }
