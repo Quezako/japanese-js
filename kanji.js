@@ -5,6 +5,11 @@
  * fetch radicals details, from which fields? maximum recursion?
  * chmn DB in french.
  * responsive, size: fonts.
+ * anki errors:
+ * Failed to load resource: the server responded with a status of 404 (NOT FOUND)
+ * :53917/_WakaFont.eot?#iefix:1          Failed to load resource: the server responded with a status of 404 (NOT FOUND)
+ * :53917/_WakaFont.svg#WakaFont:1          Failed to load resource: the server responded with a status of 404 (NOT FOUND)
+ * The resource http://127.0.0.1:53917/_WakaFont.svg#WakaFont was preloaded using link preload.
  */
 var strFront = "";
 var strBack = "";
@@ -106,9 +111,10 @@ async function dbSearch() {
 
   document.querySelector("body").innerHTML = strTpl;
 
-  // Anki script.
-  var script = document.createElement("script");
-  script.src = "https://cdn.jsdelivr.net/gh/quezako/anki/quezako.js";
-  // script.src = "../../anki/quezako.js";
-  document.head.appendChild(script);
+
+var script = document.createElement("script");
+script.src = "../../anki/quezako.js";
+document.head.appendChild(script);
 }
+
+dbSearch();
