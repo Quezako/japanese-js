@@ -323,7 +323,7 @@ html:not(.android) .ankidroidtts {
   }
 }
 .range-slider {
-  -webkit-appearance: none;
+  appearance: none;
   width: 100%;
   height: 6px;
   background: #ccc;
@@ -472,10 +472,6 @@ h4 {
   font-family: Mplus;
   src: url(_mplus-2p-regular.ttf);
 }
-@font-face {
-  font-family: "Hiragino Kaku Gothic Pro W3";
-  src: url(_hirakakyprow3.otf);
-}
 body {
   font-family: arial;
   color: #000;
@@ -621,13 +617,13 @@ ja {
   box-shadow: 2px 2px var(--ja-color-dark);
 }
 .radical {
-  font-family: "Hiragino Kaku Gothic Pro W3";
+  font-family: "HGRKK";
   color: var(--font-color-light);
   background-color: var(--radical-color);
   box-shadow: 2px 2px var(--radical-color-dark);
 }
 .kanji {
-  font-family: "Hiragino Kaku Gothic Pro W3";
+  font-family: "HGRKK";
   color: var(--font-color-light);
   background-color: var(--kanji-color);
   box-shadow: 2px 2px var(--kanji-color-dark);
