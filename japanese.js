@@ -15,6 +15,7 @@ async function dbSearch(strSearch) {
     sy: "sh",
     zy: "j",
     dy: "j",
+    oo: "ou",
   };
 
   var re = new RegExp(Object.keys(mapObj).join("|"), "gi");
