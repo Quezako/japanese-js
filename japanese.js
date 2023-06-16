@@ -8,20 +8,31 @@ async function dbSearch(strSearch) {
     tu: "tsu",
     ti: "chi",
     ty: "ch",
-    hu: "fu",
+    sy: "sh",
     zi: "ji",
     di: "ji",
     du: "zu",
-    sy: "sh",
     zy: "j",
     dy: "j",
     oo: "ou",
+    hu: "fu",
+  };
+
+  var mapObj2 = {
+    sfu: "shu",
+    cfu: "chu",
   };
 
   var re = new RegExp(Object.keys(mapObj).join("|"), "gi");
   strSearch = strSearch.replace(re, function (matched) {
     return mapObj[matched];
   });
+  re = new RegExp(Object.keys(mapObj2).join("|"), "gi");
+  strSearch = strSearch.replace(re, function (matched) {
+    return mapObj2[matched];
+  });
+
+  console.log(strSearch);
 
   // Grammar
   var dataPromise = fetch("../assets/db/grammar.db").then((res) =>
