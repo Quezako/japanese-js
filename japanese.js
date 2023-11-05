@@ -292,12 +292,12 @@ async function openDiv(strKey, strType) {
         strWordLinks += `<a href='https://jisho.org/search/${kana_key}?_x_tr_sl=en&_x_tr_tl=fr'><img src='../assets/img/favicon-062c4a0240e1e6d72c38aa524742c2d558ee6234497d91dd6b75a182ea823d65.ico' width=16 style='vertical-align:middle'>Jisho kana</a>`;
         strWordLinks += `<a href='https://uchisen.com/functions?search_term=${kanji_key}'><img src='../assets/img/favicon-16x16-7f3ea5f15b8cac1e6fa1f9922c0185debfb72296.png' style='vertical-align:middle'>Uchisen</a>`;
         strWordLinks += `<a href='https://www.wanikani.com/vocabulary/${kanji_key}'><img src='../assets/img/favicon-36371d263f6e14d1cc3b9f9c97d19f7e84e7aa856560c5ebec1dd2e738690714.ico' width=16 style='vertical-align:middle'>WaniKani Voc</a>`;
-        strWordLinks += `<a href='https://quezako.com/tools/Anki/vocabulary.php?kanji=${kanji_key}&lang=en'><img src='../assets/img/favicon-f435b736ab8486b03527fbce945f3b765428a315.ico' width=16 style='vertical-align:middle'>Quezako Voc</a>`;
-        strWordLinks += `<a href='https://quezako.com/tools/Anki/anki.php?kanji=${kanji_key}&lang=en'><img src='../assets/img/favicon-f435b736ab8486b03527fbce945f3b765428a315.ico' width=16 style='vertical-align:middle'>Quezako Kanji</a>`;
+        strWordLinks += `<a href='https://quezako.com/tools/anki/vocabulary.php?kanji=${kanji_key}&lang=en'><img src='../assets/img/favicon-f435b736ab8486b03527fbce945f3b765428a315.ico' width=16 style='vertical-align:middle'>Quezako Voc</a>`;
+        strWordLinks += `<a href='https://quezako.com/tools/anki/anki.php?kanji=${kanji_key}&lang=en'><img src='../assets/img/favicon-f435b736ab8486b03527fbce945f3b765428a315.ico' width=16 style='vertical-align:middle'>Quezako Kanji</a>`;
         strWordLinks += `<a href='https://www.google.com/search?q=${kanji_key} イラスト&tbm=isch&hl=fr&sa=X'><img src='../assets/img/favicon-49263695f6b0cdd72f45cf1b775e660fdc36c606.ico' width=16 style='vertical-align:middle'>Google Img</a>`;
 
         let strKanjiLinks =
-            "<br>$1 Kanji: <a href='https://quezako.com/tools/Anki/anki.php?kanji=$1'><img src='../assets/img/favicon-f435b736ab8486b03527fbce945f3b765428a315.ico' width=16 style='vertical-align:middle'>Quezako</a>";
+            "<br>$1 Kanji: <a href='https://quezako.com/tools/anki/anki.php?kanji=$1'><img src='../assets/img/favicon-f435b736ab8486b03527fbce945f3b765428a315.ico' width=16 style='vertical-align:middle'>Quezako</a>";
         strKanjiLinks +=
             "<a href='https://rtega.be/chmn/?c=$1'><img src='../assets/img/favicon.png' width=16 style='vertical-align:middle'>Rtega</a>";
         strKanjiLinks +=
