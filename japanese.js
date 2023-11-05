@@ -41,21 +41,21 @@ async function dbSearch(strSearch) {
     let [SQL, buf] = await Promise.all([sqlPromise, dataPromise]);
     let db = new SQL.Database(new Uint8Array(buf));
     let stmt = db.prepare(
-        `SELECT \`order\`, Grammar, GramMeaningFR, tags FROM bunpro
+        `SELECT \`order\`, Grammar, GramMeaningFR, Tags FROM bunpro
     WHERE GramHira LIKE '%${strSearch}%' GROUP BY Grammar
-    ORDER BY (CASE WHEN GramHira = '${strSearch}%' THEN 1 WHEN GramHira LIKE '${strSearch}%%' THEN 2 ELSE 3 END), tags DESC
+    ORDER BY (CASE WHEN GramHira = '${strSearch}%' THEN 1 WHEN GramHira LIKE '${strSearch}%%' THEN 2 ELSE 3 END), Tags DESC
     LIMIT 30`
     );
     let result = stmt.getAsObject({});
     let strTable = "";
     let rowResult = Object.values(result);
     let regex = /BUNPRO::N(\d)/i;
-    let found = null;
+    let found = [];
 
-    if (result.tags == null) {
+    if (result.Tags == null) {
         found = ["", "0"];
     } else {
-        found = result.tags.match(regex);
+        found = result.Tags.match(regex);
     }
     if (found == null) {
         found = ["", "0"];
@@ -69,17 +69,17 @@ async function dbSearch(strSearch) {
     while (stmt.step()) {
         const result = stmt.getAsObject();
 
-        if (result.tags == null) {
+        if (result.Tags == null) {
             found = ["", "0"];
         } else {
-            found = result.tags.match(regex);
+            found = result.Tags.match(regex);
         }
 
         if (found == null) {
             found = ["", "0"];
         }
 
-        let found = result.tags.match(regex);
+        found = result.Tags.match(regex);
         rowResult = Object.values(result);
         let strRuby = `<ruby>${rowResult[1]
             .replace(/\[/g, "<rt>")
@@ -93,7 +93,7 @@ async function dbSearch(strSearch) {
     db = new SQL.Database(new Uint8Array(buf));
 
     stmt = db.prepare(
-        `SELECT key, mean, \`order\`, tags FROM Quezako
+        `SELECT key, mean, \`order\`, Tags FROM Quezako
     WHERE version LIKE '%${strSearch}%'
     ORDER BY (CASE WHEN version = '${strSearch}' THEN 1 WHEN version LIKE '${strSearch}%' THEN 2 ELSE 3 END), \`order\`
     LIMIT 30`
@@ -101,10 +101,10 @@ async function dbSearch(strSearch) {
     result = stmt.getAsObject({});
     regex = /JLPT::(\d)/i;
 
-    if (result.tags == null) {
+    if (result.Tags == null) {
         found = ["", "0"];
     } else {
-        found = result.tags.match(regex);
+        found = result.Tags.match(regex);
     }
     if (found == null) {
         found = ["", "0"];
@@ -122,10 +122,10 @@ async function dbSearch(strSearch) {
     while (stmt.step()) {
         const result = stmt.getAsObject();
 
-        if (result.tags == null) {
+        if (result.Tags == null) {
             found = ["", "0"];
         } else {
-            found = result.tags.match(regex);
+            found = result.Tags.match(regex);
         }
 
         if (found == null) {
@@ -156,11 +156,11 @@ async function openDiv(strKey, strType) {
         const [SQL, buf] = await Promise.all([sqlPromise, dataPromise]);
         const db = new SQL.Database(new Uint8Array(buf));
 
-        const strSql = `SELECT tags, Grammar, GramMeaningFR, GrammarStructureFR, GrammarNuanceFR, Sentence, SentenceFR, SentenceNuanceFR, SupplementalLinksFR, OfflineResourcesFR, GramMeaning, GrammarStructure, GrammarNuance, SentenceEN, SentenceNuance, SupplementalLinks, OfflineResources, SentenceAudio, GramHira
+        const strSql = `SELECT Tags, Grammar, GramMeaningFR, GrammarStructureFR, GrammarNuanceFR, Sentence, SentenceFR, SentenceNuanceFR, SupplementalLinksFR, OfflineResourcesFR, GramMeaning, GrammarStructure, GrammarNuance, SentenceEN, SentenceNuance, SupplementalLinks, OfflineResources, SentenceAudio, GramHira
     FROM bunpro WHERE Grammar = "${strKey}"`;
         const stmt = db.prepare(strSql);
         let result = stmt.getAsObject({});
-        let strTable = "";
+        strTable = "";
 
         for (let [key, val2] of Object.entries(result)) {
             let arrVal = [];
@@ -249,7 +249,7 @@ async function openDiv(strKey, strType) {
       FROM Quezako WHERE key = "${strKey}"`
         );
         const result = stmt.getAsObject({});
-        let strTable = "";
+        strTable = "";
 
         for (let [key, val2] of Object.entries(result)) {
             let arrVal = [];
