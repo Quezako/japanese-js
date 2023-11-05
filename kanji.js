@@ -41,7 +41,7 @@ async function dbSearch() {
         locateFile: (file) => "../../js/sql-wasm.wasm",
     });
 
-    const dataPromise = fetch("../db/vocab.db").then((res) => res.arrayBuffer());
+    const dataPromise = fetch("../db/vocab.sqlite").then((res) => res.arrayBuffer());
     const [SQL, buf] = await Promise.all([sqlPromise, dataPromise]);
     const db = new SQL.Database(new Uint8Array(buf));
 

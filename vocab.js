@@ -3,7 +3,7 @@ async function dbSearch(strSearch) {
         locateFile: file => 'sql-wasm.wasm'
     });
 
-    const dataPromise = fetch('../assets/db/vocab.db').then(res => res.arrayBuffer());
+    const dataPromise = fetch('../assets/db/vocab.sqlite').then(res => res.arrayBuffer());
     const [SQL, buf] = await Promise.all([sqlPromise, dataPromise])
     const db = new SQL.Database(new Uint8Array(buf));
 
@@ -30,7 +30,7 @@ async function openDiv(intRow) {
         locateFile: file => 'sql-wasm.wasm'
     });
 
-    const dataPromise = fetch('../assets/db/vocab.db').then(res => res.arrayBuffer());
+    const dataPromise = fetch('../assets/db/vocab.sqlite').then(res => res.arrayBuffer());
     const [SQL, buf] = await Promise.all([sqlPromise, dataPromise])
     const db = new SQL.Database(new Uint8Array(buf));
 
