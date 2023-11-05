@@ -35,7 +35,7 @@ async function dbSearch(strSearch) {
     console.log(strSearch);
 
     // Grammar
-    let dataPromise = fetch("../assets/db/grammar.db").then((res) =>
+    let dataPromise = fetch("../assets/db/grammar.sqlite").then((res) =>
         res.arrayBuffer()
     );
     let [SQL, buf] = await Promise.all([sqlPromise, dataPromise]);
@@ -88,7 +88,7 @@ async function dbSearch(strSearch) {
     }
 
     // Vocabulary
-    dataPromise = fetch("../assets/db/vocab.db").then((res) => res.arrayBuffer());
+    dataPromise = fetch("../assets/db/vocab.sqlite").then((res) => res.arrayBuffer());
     [SQL, buf] = await Promise.all([sqlPromise, dataPromise]);
     db = new SQL.Database(new Uint8Array(buf));
 
@@ -150,7 +150,7 @@ async function openDiv(strKey, strType) {
     });
 
     if (strType == "gramm") {
-        const dataPromise = fetch("../assets/db/grammar.db").then((res) =>
+        const dataPromise = fetch("../assets/db/grammar.sqlite").then((res) =>
             res.arrayBuffer()
         );
         const [SQL, buf] = await Promise.all([sqlPromise, dataPromise]);
@@ -238,7 +238,7 @@ async function openDiv(strKey, strType) {
         }
         strTable += strTable2;
     } else {
-        const dataPromise = fetch("../assets/db/vocab.db").then((res) =>
+        const dataPromise = fetch("../assets/db/vocab.sqlite").then((res) =>
             res.arrayBuffer()
         );
         const [SQL, buf] = await Promise.all([sqlPromise, dataPromise]);

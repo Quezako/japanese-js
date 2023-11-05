@@ -3,7 +3,7 @@ async function start() {
         locateFile: file => `sql-wasm.wasm`
     });
 
-    const dataPromise = fetch("../assets/db/dict.db").then(res => res.arrayBuffer());
+    const dataPromise = fetch("../assets/db/dict.sqlite").then(res => res.arrayBuffer());
     const [SQL, buf] = await Promise.all([sqlPromise, dataPromise])
     const db = new SQL.Database(new Uint8Array(buf));
     const stmt = db.prepare("SELECT * FROM dict WHERE tags LIKE '%JLPT::5%' ORDER BY RANDOM() LIMIT 1");
