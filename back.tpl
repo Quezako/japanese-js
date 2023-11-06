@@ -4,6 +4,7 @@
   <span id="kanji_key" style="display:none">{{kanji:key}}</span>
   <span id="kana_key" style="display:none">{{kana:key}}</span>
   <span id="kanji_only" style="display:none">{{kanji_only}}{{^kanji_only}}{{kanji:key}}{{/kanji_only}}</span>
+  <span id="dict_key" style="display:none">{{dict_key}}</span>
 </span>
 <br><br>
 Furigana : <span id="furigana">{{furigana:key}}</span><br>
