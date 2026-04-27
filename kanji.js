@@ -16,7 +16,7 @@ let strBack = "";
 
 async function dbSearch() {
     let xhr = new XMLHttpRequest();
-    xhr.open("GET", `../../js/front.tpl`, true);
+    xhr.open("GET", `front.tpl`, true);
     xhr.onreadystatechange = function () {
         if (this.readyState !== 4) return;
         if (this.status !== 200) return;
@@ -25,7 +25,7 @@ async function dbSearch() {
     xhr.send();
 
     xhr = new XMLHttpRequest();
-    xhr.open("GET", `../../js/back.tpl`, true);
+    xhr.open("GET", `back.tpl`, true);
     xhr.onreadystatechange = function () {
         if (this.readyState !== 4) return;
         if (this.status !== 200) return;
@@ -38,17 +38,23 @@ async function dbSearch() {
     const strSearch = urlParams.get("kanji");
 
     const sqlPromise = await initSqlJs({
-        locateFile: (file) => "../../js/sql-wasm.wasm",
+        locateFile: (file) => "sql-wasm.wasm",
     });
 
-    const dataPromise = fetch("../db/vocab.sqlite").then((res) => res.arrayBuffer());
+    const dataPromise = fetch("../assets/db/vocab.sqlite").then((res) => res.arrayBuffer());
     const [SQL, buf] = await Promise.all([sqlPromise, dataPromise]);
     const db = new SQL.Database(new Uint8Array(buf));
 
-    let stmt = db.prepare(
-        `SELECT * FROM Quezako WHERE key LIKE '${strSearch}[%' OR key = '${strSearch}}'`
-    );
-    let result = stmt.getAsObject({});
+    let stmt = db.prepare("SELECT * FROM Quezako WHERE key LIKE ? OR key = ? LIMIT 1");
+    stmt.bind([`${strSearch}[%`, strSearch]);
+
+    if (!stmt.step()) {
+        document.querySelector("body").innerHTML = `<p>Aucun résultat pour ${strSearch}</p>`;
+        stmt.free();
+        return;
+    }
+
+    let result = stmt.getAsObject();
     let strTpl = strBack.replace(/{{FrontSide}}/g, strFront);
     strTpl = strTpl.replace(/(edit):/g, "");
     strTpl = strTpl.replace(/(hint):/g, "");
@@ -101,7 +107,7 @@ async function dbSearch() {
         strReturn = strReturn.replace(
             /\[sound:([^\]]+)\]/g,
             `
-        <audio hidden id="player$1" controls src="$1" /></audio>
+        <audio hidden id="player$1" controls src="../assets/img/$1" /></audio>
         <div class="player" onclick="player = document.getElementById('player$1'); if(player.paused) {player.play()} else {player.pause();player.currentTime = 0}"></div>
       `
         );
@@ -109,12 +115,10 @@ async function dbSearch() {
         return strReturn;
     });
 
+    strTpl = strTpl.replace(/src="(?!https?:|data:|\/)([^"]+)"/g, 'src="../assets/img/$1"');
+
     document.querySelector("body").innerHTML = strTpl;
-
-
-    let script = document.createElement("script");
-    script.src = "../../anki/quezako.js";
-    document.head.appendChild(script);
+    stmt.free();
 }
 
 dbSearch();
